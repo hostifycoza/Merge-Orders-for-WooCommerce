@@ -1,31 +1,30 @@
 <?php
-// If uninstall not called from WordPress, then exit.
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
+// If uninstall not called from WordPress, exit.
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
 }
 
-// Define the option names that your plugin has created.
-$option_names = array(
-	// 'option_name_1',
-	// 'option_name_2',
-);
+// Include the wp-load.php to get access to the WordPress database functions
+include_once(ABSPATH . 'wp-load.php');
 
-// Loop through and delete the options from the options table.
-foreach ( $option_names as $option_name ) {
-	delete_option( $option_name );
+// Check if WooCommerce is active
+if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+
+    // Get all orders with 'wc-merged' status
+    $args = array(
+        'status' => 'merged', // Use the custom status slug without 'wc-' prefix
+        'type' => 'shop_order',
+        'return' => 'ids',
+        'limit' => -1 // Retrieve all orders
+    );
+
+    $orders = wc_get_orders($args);
+
+    // Loop through the orders and change their status to 'wc-draft'
+    foreach ($orders as $order_id) {
+        $order = wc_get_order($order_id);
+        if ($order) {
+            $order->update_status('draft', 'Order status changed to draft on plugin uninstall', true);
+        }
+    }
 }
-
-// For Multisite: Delete options from each blog.
-if ( is_multisite() ) {
-	$blog_ids = get_sites( array( 'fields' => 'ids' ) );
-	foreach ( $blog_ids as $blog_id ) {
-		switch_to_blog( $blog_id );
-		foreach ( $option_names as $option_name ) {
-			delete_option( $option_name );
-		}
-		restore_current_blog();
-	}
-}
-
-// Add here any additional cleanup code, such as removing custom tables or post meta data.
-
