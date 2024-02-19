@@ -4,27 +4,27 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
     exit;
 }
 
-// Include the wp-load.php to get access to the WordPress database functions
-include_once(ABSPATH . 'wp-load.php');
-
 // Check if WooCommerce is active
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
 
-    // Get all orders with 'wc-merged' status
-    $args = array(
-        'status' => 'merged', // Use the custom status slug without 'wc-' prefix
-        'type' => 'shop_order',
-        'return' => 'ids',
-        'limit' => -1 // Retrieve all orders
-    );
+    global $wpdb;
 
-    $orders = wc_get_orders($args);
+    // Query to select orders with 'wc-merged' status
+    $orders_ids = get_posts(array(
+        'posts_per_page' => -1,
+        'post_type' => 'shop_order',
+        'post_status' => 'wc-merged',
+        'fields' => 'ids',
+    ));
 
-    // Loop through the orders and change their status to 'wc-draft'
-    foreach ($orders as $order_id) {
-        $order = wc_get_order($order_id);
-        if ($order) {
-            $order->update_status('draft', 'Order status changed to draft on plugin uninstall', true);
+    // Check if we have any orders to update
+    if (!empty($orders_ids)) {
+        foreach ($orders_ids as $order_id) {
+            // Update order status to 'wc-pending' which is the correct status code for pending orders
+            wp_update_post(array(
+                'ID' => $order_id,
+                'post_status' => 'wc-pending'
+            ));
         }
     }
 }
