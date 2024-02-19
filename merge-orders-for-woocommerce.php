@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Merge Orders for WooCommerce
- * Plugin URI:  https://hostify.co.za
+ * Plugin URI:  https://dev.hostify.co.za
  * Description: Merges multiple pending payment orders from the same customer into one, fully compatible with WooCommerce HPOS. Supports integration with YITH WooCommerce Auctions.
  * Version:     1.1
  * Author:      Hostify
@@ -82,6 +82,10 @@ function merge_orders_admin_page() {
 
     // Start building the admin page
     echo '<div class="wrap"><h1>Merge Orders</h1>';
+    echo '<div class="merge-orders-instructions">';
+    echo '<h2>Instructions:</h2>';
+    echo '<p>Select the orders you wish to merge and click "Merge Selected Orders".</p>';
+    echo '</div>';
 
     if (!empty($orders)) {
         // Example layout for listing orders
@@ -114,16 +118,21 @@ function merge_orders_admin_page() {
         }
 
         echo '</tbody></table>';
+        echo '<br>';
         echo '<button type="submit" class="button action">Merge Selected Orders</button>';
         echo '</form>';
     } else {
         echo '<p>No eligible orders found for merging.</p>';
     }
 
+    // Sticky footer
+    echo '<div class="merge-orders-footer">';
+    echo '<br>';
+    echo 'Powered by <a href="https://hostify.co.za" target="_blank">Hostify</a>. Need help? Visit our <a href="https://dev.hostify.co.za/support" target="_blank">Support Page</a>.';
     echo '</div>';
+
+    echo '</div>'; // Close wrap
 }
-
-
 
 function get_orders_to_merge() {
     $args = array(
