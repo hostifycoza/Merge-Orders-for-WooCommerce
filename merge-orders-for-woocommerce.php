@@ -16,98 +16,171 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Checks if WooCommerce is active and meets version requirements.
+ * Check if WooCommerce is active and version meets requirements.
  */
 function check_woocommerce_version() {
-    if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')), true)) {
-        return;
-    }
+    if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+        // WooCommerce is active, you can run your code that depends on WooCommerce here.
 
-    if (!defined('WC_VERSION') || version_compare(WC_VERSION, '8.0', '<')) {
-        add_action('admin_notices', function() {
-            echo '<div class="error"><p>This plugin requires WooCommerce version 8.0 or greater.</p></div>';
-        });
-        deactivate_plugins(plugin_basename(__FILE__));
-    } else {
-        // Register hooks and filters only if WooCommerce is active and meets version requirements.
-        merge_orders_for_woocommerce_init();
+        if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '8.0', '>=' ) ) {
+            // Code for WooCommerce 8.0 or newer.
+            // Initialize your plugin's main functionality or hooks here.
+        }
     }
 }
-add_action('plugins_loaded', 'check_woocommerce_version');
+add_action( 'plugins_loaded', 'check_woocommerce_version' );
 
-function merge_orders_for_woocommerce_init() {
-    add_action('init', 'register_merged_order_status');
-    add_action('admin_menu', 'merge_orders_menu');
-    add_filter('wc_order_statuses', 'add_merged_to_order_statuses');
-    add_action('admin_post_merge_selected_orders', 'handle_merge_orders_submission');
-}
 
 function register_merged_order_status() {
     register_post_status('wc-merged', array(
-        'label'                     => _x('Merged', 'Order status', 'merge-orders-for-woocommerce'),
+        'label'                     => 'Merged',
         'public'                    => true,
         'exclude_from_search'       => false,
         'show_in_admin_all_list'    => true,
         'show_in_admin_status_list' => true,
-        'label_count'               => _n_noop('Merged <span class="count">(%s)</span>', 'Merged <span class="count">(%s)</span>', 'merge-orders-for-woocommerce')
+        'label_count'               => _n_noop('Merged <span class="count">(%s)</span>', 'Merged <span class="count">(%s)</span>')
     ));
 }
+add_action('init', 'register_merged_order_status');
+
+function add_merged_to_order_statuses($order_statuses) {
+    $new_order_statuses = array();
+
+    // add new order status after processing
+    foreach ($order_statuses as $key => $status) {
+        $new_order_statuses[$key] = $status;
+        if ('wc-processing' === $key) { // You might want to change this condition
+            $new_order_statuses['wc-merged'] = 'Merged';
+        }
+    }
+    return $new_order_statuses;
+}
+add_filter('wc_order_statuses', 'add_merged_to_order_statuses');
+
 
 function merge_orders_menu() {
     add_submenu_page(
-        'woocommerce',
-        'Merge Orders',
-        'Merge Orders',
-        'manage_woocommerce',
-        'merge-orders',
-        'merge_orders_admin_page'
+        'woocommerce', // Parent slug
+        'Merge Orders', // Page title
+        'Merge Orders', // Menu title
+        'manage_woocommerce', // Capability
+        'merge-orders', // Menu slug
+        'merge_orders_admin_page' // Function to display the admin page
     );
 }
+add_action('admin_menu', 'merge_orders_menu');
 
-function add_merged_to_order_statuses($order_statuses) {
-    $order_statuses['wc-merged'] = _x('Merged', 'Order status', 'merge-orders-for-woocommerce');
-    return $order_statuses;
-}
 
 function merge_orders_admin_page() {
-    // Admin page content. Ensure proper sanitization and capability checks.
-    echo '<div class="wrap"><h1>Merge Orders</h1><p>Admin page content here.</p></div>';
+    // Ensure the user has the right capability
+    if (!current_user_can('manage_woocommerce')) {
+        return;
+    }
+
+    // Fetch orders that can be merged (simplified example)
+    $orders = get_orders_to_merge();
+
+    // Start building the admin page
+    echo '<div class="wrap"><h1>Merge Orders</h1>';
+
+    if (!empty($orders)) {
+        // Example layout for listing orders
+        // Update the form to include action URL and nonce for security
+        echo '<form id="merge-orders-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        // Hidden input fields for action and nonce
+        echo '<input type="hidden" name="action" value="merge_selected_orders">';
+        wp_nonce_field('merge_orders_nonce_action', 'merge_orders_nonce_name');
+
+        echo '<table class="wp-list-table widefat fixed striped">';
+        // Added 'Total Price' in the header
+        echo '<thead><tr><th>Select</th><th>Order ID</th><th>Customer Name</th><th>Date</th><th>Status</th><th>Total Price</th></tr></thead>';
+        echo '<tbody>';
+
+        foreach ($orders as $order_id) {
+            $order = wc_get_order($order_id);
+            $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(); // Customer Name
+            $total_price = $order->get_total(); // Total Price of the order
+
+            echo '<tr>';
+            echo '<td><input type="checkbox" name="order_ids[]" value="' . esc_attr($order_id) . '"></td>';
+            echo '<td>' . esc_html($order->get_order_number()) . '</td>';
+            // Display Customer Name
+            echo '<td>' . esc_html($customer_name) . '</td>';
+            echo '<td>' . esc_html($order->get_date_created()->date('Y-m-d H:i:s')) . '</td>';
+            echo '<td>' . esc_html(wc_get_order_status_name($order->get_status())) . '</td>';
+            // Display Total Price
+            echo '<td>' . wc_price($total_price) . '</td>'; // Using wc_price to format the price
+            echo '</tr>';
+        }
+
+        echo '</tbody></table>';
+        echo '<button type="submit" class="button action">Merge Selected Orders</button>';
+        echo '</form>';
+    } else {
+        echo '<p>No eligible orders found for merging.</p>';
+    }
+
+    echo '</div>';
 }
+
+
+
+function get_orders_to_merge() {
+    $args = array(
+        'status' => 'pending',
+        'return' => 'ids',
+        // Add any other arguments for fetching orders
+    );
+    return wc_get_orders($args);
+}
+
+
+add_action('admin_post_merge_selected_orders', 'handle_merge_orders_submission');
 
 function handle_merge_orders_submission() {
-    // Security checks (e.g., nonces) and capability checks.
-    
     if (isset($_POST['order_ids']) && is_array($_POST['order_ids'])) {
-        $order_ids = array_map('intval', $_POST['order_ids']); // Sanitize input.
+        $order_ids = array_map('intval', $_POST['order_ids']); // Sanitize input
         merge_orders($order_ids);
-        wp_safe_redirect(admin_url('admin.php?page=merge-orders'));
-        exit;
     }
+    wp_redirect(admin_url('admin.php?page=merge-orders'));
+    exit;
 }
 
+
+
 function merge_orders($order_ids) {
+    // Create a new order
     $new_order = wc_create_order();
 
     foreach ($order_ids as $order_id) {
         $order = wc_get_order($order_id);
-        if (!$order) continue;
 
-        foreach ($order->get_items() as $item) {
-            $new_item = new WC_Order_Item_Product();
-            $new_item->set_props([
-                'product_id' => $item->get_product_id(),
-                'quantity' => $item->get_quantity(),
-                'subtotal' => $item->get_subtotal(),
-                'total' => $item->get_total(),
-                // Add any additional props as needed.
-            ]);
-            $new_order->add_item($new_item);
+        if (!$order) {
+            continue;
         }
 
-        $order->update_status('wc-merged', sprintf(__('Order merged into order #%s', 'merge-orders-for-woocommerce'), $new_order->get_id()), true);
+        // Copy items from existing orders to the new order
+        foreach ($order->get_items() as $item) {
+            // Ensure compatibility with HPOS by using CRUD methods
+            $product = $item->get_product();
+            if ($product) {
+                $new_item = new WC_Order_Item_Product();
+                $new_item->set_props(array(
+                    'product'  => $product,
+                    'quantity' => $item->get_quantity(),
+                    'subtotal' => $item->get_subtotal(),
+                    'total'    => $item->get_total(),
+                    // Include any other properties you need to copy
+                ));
+                $new_order->add_item($new_item);
+            }
+        }
+
+        // Mark the original order as merged
+        $order->update_status('merged', 'Order merged into order #' . $new_order->get_id(), true);
     }
 
+    // Save the new order to ensure all data is stored correctly
     $new_order->calculate_totals();
     $new_order->save();
-    // Optionally add order notes or additional meta to the new order here.
 }
