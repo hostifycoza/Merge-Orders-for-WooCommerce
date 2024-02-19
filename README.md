@@ -1,50 +1,42 @@
-# Merge Orders for WooCommerce - HPOS Compatible
+=== Merge Orders for WooCommerce - HPOS Compatible ===
+Contributors: hostify
+Tags: woocommerce, orders, merge orders, ecommerce
+Requires at least: 6.4.3
+Tested up to: 6.9
+Requires PHP: 8.1
+Stable tag: 1.1
+License: GPL2
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-This WordPress plugin merges multiple pending payment orders from the same customer into one, enhancing the management and processing efficiency in WooCommerce stores. It ensures compatibility with WooCommerce HPOS and supports integration with YITH WooCommerce Auctions.
+Merges multiple pending payment orders from the same customer into one, fully compatible with WooCommerce HPOS. Supports integration with YITH WooCommerce Auctions.
 
-## Features
+== Description ==
+Merge Orders for WooCommerce - HPOS Compatible is a powerful plugin that allows WooCommerce store owners to simplify their order management by merging multiple pending payment orders from the same customer into a single order. This is particularly useful for shops that have customers who make several purchases before completing payment. Our plugin is fully compatible with WooCommerce HPOS and supports integration with YITH WooCommerce Auctions, making it a versatile tool for a wide range of e-commerce stores.
 
-- **Merge Pending Orders**: Automatically combine multiple pending orders from the same customer.
-- **HPOS Compatibility**: Ensures seamless operation with WooCommerce High Performance Order Storage (HPOS).
-- **YITH WooCommerce Auctions Integration**: Extends support to auction-based products, consolidating auction wins into a single order.
+== Installation ==
+1. Upload the plugin files to the `/wp-content/plugins/merge-orders-for-woocommerce` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Use the plugin through the 'WooCommerce' > 'Merge Orders' interface in the admin panel.
 
-## Requirements
+== Frequently Asked Questions ==
+= Is this plugin compatible with all versions of WooCommerce? =
+This plugin requires WooCommerce 8.0 or higher.
 
-- WooCommerce 8.0 or higher.
+= Can I merge orders from different customers? =
+No, this plugin is designed to merge orders only from the same customer.
 
-## Installation
+== Screenshots ==
+1. Admin page showing the list of orders ready to be merged.
+2. Settings page for custom configurations (if applicable).
 
-1. Download the plugin zip file.
-2. Go to your WordPress Dashboard > Plugins > Add New and click 'Upload Plugin' at the top.
-3. Upload the zip file and click Install Now.
-4. Once installed, activate the plugin.
+== Changelog ==
+= 1.1 =
+* Added support for YITH WooCommerce Auctions.
+* Improved compatibility with WooCommerce HPOS.
 
-## Usage
+= 1.0 =
+* Initial release.
 
-After activation, the plugin automatically monitors for multiple pending orders from the same customer and merges them. To configure:
-
-1. Navigate to WooCommerce > Merge Orders in your WordPress dashboard to access the plugin settings.
-2. Use the provided options to customize the merging process according to your needs.
-
-## Hooks and Filters
-
-The plugin provides various actions and filters to further customize its functionality. For developers:
-
-- `init`: Register custom merged order status.
-- `admin_menu`: Adds a submenu for plugin settings under WooCommerce menu.
-- `plugins_loaded`: Checks for WooCommerce activation and version requirement.
-
-## Changelog
-
-### 1.1
-
-- Enhanced HPOS compatibility.
-- Support for YITH WooCommerce Auctions integration.
-
-## Support
-
-For support, visit [Hostify Support](https://hostify.co.za).
-
-## Author
-
-Developed by Hostify. Visit us at [https://hostify.co.za](https://hostify.co.za) for more information.
+== Upgrade Notice ==
+= 1.1 =
+Added support for additional plugins and improved WooCommerce HPOS compatibility.
