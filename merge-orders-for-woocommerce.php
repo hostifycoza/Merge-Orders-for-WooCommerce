@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Merge Orders for WooCommerce - HPOS Compatible
+ * Plugin Name: Merge Orders for WooCommerce
  * Plugin URI:  https://hostify.co.za
  * Description: Merges multiple pending payment orders from the same customer into one, fully compatible with WooCommerce HPOS. Supports integration with YITH WooCommerce Auctions.
  * Version:     1.1
