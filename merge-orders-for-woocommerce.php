@@ -101,21 +101,25 @@ function merge_orders_admin_page() {
         echo '<tbody>';
 
         foreach ($orders as $order_id) {
-            $order = wc_get_order($order_id);
-            $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(); // Customer Name
-            $total_price = $order->get_total(); // Total Price of the order
+    $order = wc_get_order($order_id);
+    // Fetch the WP_User object
+    $user = $order->get_user();
+    // Use the user's login (username) instead of the customer's billing name
+    $user_name = is_a($user, 'WP_User') ? $user->user_login : 'Guest'; // Fallback to 'Guest' if no user is associated with the order
 
-            echo '<tr>';
-            echo '<td><input type="checkbox" name="order_ids[]" value="' . esc_attr($order_id) . '"></td>';
-            echo '<td>' . esc_html($order->get_order_number()) . '</td>';
-            // Display Customer Name
-            echo '<td>' . esc_html($customer_name) . '</td>';
-            echo '<td>' . esc_html($order->get_date_created()->date('Y-m-d H:i:s')) . '</td>';
-            echo '<td>' . esc_html(wc_get_order_status_name($order->get_status())) . '</td>';
-            // Display Total Price
-            echo '<td>' . wc_price($total_price) . '</td>'; // Using wc_price to format the price
-            echo '</tr>';
-        }
+    $total_price = $order->get_total(); // Total Price of the order
+
+    echo '<tr>';
+    echo '<td><input type="checkbox" name="order_ids[]" value="' . esc_attr($order_id) . '"></td>';
+    echo '<td>' . esc_html($order->get_order_number()) . '</td>';
+    // Display User Name instead of Customer Name
+    echo '<td>' . esc_html($user_name) . '</td>';
+    echo '<td>' . esc_html($order->get_date_created()->date('Y-m-d H:i:s')) . '</td>';
+    echo '<td>' . esc_html(wc_get_order_status_name($order->get_status())) . '</td>';
+    // Display Total Price
+    echo '<td>' . wc_price($total_price) . '</td>'; // Using wc_price to format the price
+    echo '</tr>';
+}
 
         echo '</tbody></table>';
         echo '<br>';
