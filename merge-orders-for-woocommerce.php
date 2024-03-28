@@ -136,13 +136,12 @@ function merge_orders_admin_page() {
 
 function get_orders_to_merge() {
     $args = array(
-        'status' => 'pending',
+        'status' => 'on-hold', // Changed from 'pending' to 'on-hold'
         'return' => 'ids',
         // Add any other arguments for fetching orders
     );
     return wc_get_orders($args);
 }
-
 
 add_action('admin_post_merge_selected_orders', 'handle_merge_orders_submission');
 
@@ -188,6 +187,9 @@ function merge_orders($order_ids) {
         // Mark the original order as merged
         $order->update_status('merged', 'Order merged into order #' . $new_order->get_id(), true);
     }
+
+    // Set the new order status to 'pending'
+    $new_order->set_status('pending', 'Newly merged order, pending payment.');
 
     // Save the new order to ensure all data is stored correctly
     $new_order->calculate_totals();
