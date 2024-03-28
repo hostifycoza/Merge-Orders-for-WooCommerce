@@ -72,89 +72,74 @@ add_action('admin_menu', 'merge_orders_menu');
 
 
 function merge_orders_admin_page() {
-    // Ensure the user has the right capability
     if (!current_user_can('manage_woocommerce')) {
-        return;
+        return; // Exit if the user doesn't have the right capability.
     }
 
-    // Fetch orders that can be merged (simplified example)
-    $orders = get_orders_to_merge();
+    $orders = get_orders_to_merge(); // Fetch orders that can be merged.
 
-// Start building the admin page
-echo '<div class="wrap"><h1>Process / Merge Auction Wins</h1>';
-echo '<div class="merge-orders-instructions" style="display: flex; justify-content: space-between;">';
-echo '<div style="width: 48%;">';
-echo '<h2>For Multiple Wins:</h2>';
-echo '<p><strong>To merge multiple auction wins for the same user:</strong></p>';
-echo '<ol>';
-echo '<li>Select the wins (from the same user) you wish to merge from the list below.</li>';
-echo '<li>Click the "Process / Merge Auction Wins" button at the bottom.</li>';
-echo '<li>The selected wins will be combined into a single order, and the original wins will be marked as merged.</li>';
-echo '</ol>';
-echo '</div>';
-echo '<div style="width: 48%;">';
-echo '<h2>For Single Wins:</h2>';
-echo '<p><strong>To process a single auction win:</strong></p>';
-echo '<ol>';
-echo '<li>Simply select the win you wish to process for one user.</li>';
-echo '<li>Click the "Process / Merge Auction Wins" button.</li>';
-echo '<li>The selected win will be updated to a "pending" status, and an invoice will be sent to the user.</li>';
-echo '</ol>';
-echo '</div>';
-echo '</div>'; // Close .merge-orders-instructions
-echo '<p>This functionality allows for efficient management of auction wins, whether you\'re combining multiple wins for the same user into one order or processing individual wins.</p>';
-echo '</div>'; // Close .wrap
+    // Start building the admin page
+    echo '<div class="wrap"><h1>Process / Merge Auction Wins</h1>';
+    echo '<div class="merge-orders-instructions" style="display: flex; flex-wrap: wrap; gap: 20px;">'; // Added gap for spacing
+    echo '<div style="flex-basis: 48%;">'; // Use flex-basis for flexible widths
+    echo '<h2>For Multiple Wins:</h2>';
+    echo '<p><strong>To merge multiple auction wins for the same user:</strong></p>';
+    echo '<ol>';
+    echo '<li>Select the wins you wish to merge from the list below. Ensure they are from the same user.</li>';
+    echo '<li>Click the "Process / Merge Auction Wins" button below.</li>';
+    echo '<li>The selected wins will be combined into a single order, and the original wins will be marked as merged and an invoice will be sent to the user.</li>';
+    echo '</ol>';
+    echo '</div>'; // Close column
+    echo '<div style="flex-basis: 48%;">';
+    echo '<h2>For Single Wins:</h2>';
+    echo '<p><strong>To process a single auction win:</strong></p>';
+    echo '<ol>';
+    echo '<li>Select the win you wish to process.</li>';
+    echo '<li>Click the "Process / Merge Auction Wins" button.</li>';
+    echo '<li>The selected win will be set to "pending" status, and an invoice will be sent to the user.</li>';
+    echo '</ol>';
+    echo '</div>'; // Close column
+    echo '</div>'; // Close instructions container
+    echo '<p>This functionality allows for efficient management of auction wins, enabling you to either combine multiple wins into one order or process individual wins as needed.</p>';
 
     if (!empty($orders)) {
-        // Example layout for listing orders
-        // Update the form to include action URL and nonce for security
-        echo '<form id="merge-orders-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-        // Hidden input fields for action and nonce
-        echo '<input type="hidden" name="action" value="merge_selected_orders">';
+        echo '<form id="merge-orders-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin-bottom: 20px;">'; // Added margin to the bottom of the form
         wp_nonce_field('merge_orders_nonce_action', 'merge_orders_nonce_name');
-
         echo '<table class="wp-list-table widefat fixed striped">';
-        // Added 'Total Price' in the header
-        echo '<thead><tr><th>Select</th><th>Order ID</th><th>Customer Name</th><th>Date</th><th>Status</th><th>Total Price</th></tr></thead>';
+        echo '<thead><tr><th>Select</th><th>Order ID</th><th>User Name</th><th>Date</th><th>Status</th><th>Total Price</th></tr></thead>';
         echo '<tbody>';
 
         foreach ($orders as $order_id) {
-    $order = wc_get_order($order_id);
-    // Fetch the WP_User object
-    $user = $order->get_user();
-    // Use the user's login (username) instead of the customer's billing name
-    $user_name = is_a($user, 'WP_User') ? $user->user_login : 'Guest'; // Fallback to 'Guest' if no user is associated with the order
+            $order = wc_get_order($order_id);
+            $user = $order->get_user();
+            $user_name = is_a($user, 'WP_User') ? $user->user_login : 'Guest';
 
-    $total_price = $order->get_total(); // Total Price of the order
-
-    echo '<tr>';
-    echo '<td><input type="checkbox" name="order_ids[]" value="' . esc_attr($order_id) . '"></td>';
-    echo '<td>' . esc_html($order->get_order_number()) . '</td>';
-    // Display User Name instead of Customer Name
-    echo '<td>' . esc_html($user_name) . '</td>';
-    echo '<td>' . esc_html($order->get_date_created()->date('Y-m-d H:i:s')) . '</td>';
-    echo '<td>' . esc_html(wc_get_order_status_name($order->get_status())) . '</td>';
-    // Display Total Price
-    echo '<td>' . wc_price($total_price) . '</td>'; // Using wc_price to format the price
-    echo '</tr>';
-}
+            echo '<tr>';
+            echo '<td><input type="checkbox" name="order_ids[]" value="' . esc_attr($order_id) . '"></td>';
+            echo '<td>' . esc_html($order->get_order_number()) . '</td>';
+            echo '<td>' . esc_html($user_name) . '</td>';
+            echo '<td>' . esc_html($order->get_date_created()->date('Y-m-d H:i:s')) . '</td>';
+            echo '<td>' . esc_html(wc_get_order_status_name($order->get_status())) . '</td>';
+            echo '<td>' . wc_price($order->get_total()) . '</td>';
+            echo '</tr>';
+        }
 
         echo '</tbody></table>';
-        echo '<br>';
-        echo '<button type="submit" class="button action">Process / Merge Auction Wins</button>';
+        echo '<button type="submit" class="button action" style="margin-top: 20px;">Process / Merge Auction Wins</button>'; // Added margin to the top of the button
         echo '</form>';
     } else {
-        echo '<p>No eligible orders found for merging.</p>';
+        echo '<p>No eligible auction wins found for processing or merging.</p>';
     }
 
-    // Sticky footer
-    echo '<div class="merge-orders-footer">';
-    echo '<br>';
+    // Add padding around the footer for better spacing
+    echo '<div class="merge-orders-footer" style="padding-top: 20px;">'; // Added padding to the top of the footer
     echo 'Powered by <a href="https://hostify.co.za" target="_blank">Hostify</a>. Need help? Visit our <a href="https://dev.hostify.co.za/support" target="_blank">Support Page</a>.';
     echo '</div>';
 
     echo '</div>'; // Close wrap
 }
+
+
 
 function get_orders_to_merge() {
     $args = array(
