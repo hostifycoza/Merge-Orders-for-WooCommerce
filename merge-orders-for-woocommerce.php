@@ -164,11 +164,19 @@ function merge_orders($order_ids) {
     // Create a new order
     $new_order = wc_create_order();
 
+    // Variable to store customer email
+    $customer_email = '';
+
     foreach ($order_ids as $order_id) {
         $order = wc_get_order($order_id);
 
         if (!$order) {
             continue;
+        }
+
+        // Store customer email from the first order
+        if (empty($customer_email)) {
+            $customer_email = $order->get_billing_email();
         }
 
         // Copy items from existing orders to the new order
@@ -195,7 +203,17 @@ function merge_orders($order_ids) {
     // Set the new order status to 'pending'
     $new_order->set_status('pending', 'Newly merged order, pending payment.');
 
+    // Set the billing email for the new order
+    if (!empty($customer_email)) {
+        $new_order->set_billing_email($customer_email);
+    }
+
     // Save the new order to ensure all data is stored correctly
     $new_order->calculate_totals();
     $new_order->save();
+
+    // Trigger the email for the new order if we have an email to send to
+    if (!empty($customer_email)) {
+        WC()->mailer()->get_emails()['WC_Email_Customer_Invoice']->trigger($new_order->get_id());
+    }
 }
