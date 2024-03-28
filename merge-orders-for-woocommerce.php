@@ -3,7 +3,7 @@
  * Plugin Name: Merge Orders for WooCommerce
  * Plugin URI:  https://dev.hostify.co.za
  * Description: Merges multiple pending payment orders from the same customer into one, fully compatible with WooCommerce HPOS. Supports integration with YITH WooCommerce Auctions.
- * Version:     1.1
+ * Version:     1.5
  * Author:      Hostify
  * Author URI:  https://hostify.co.za
  * Text Domain: merge-orders-for-woocommerce
@@ -213,14 +213,24 @@ function merge_orders($order_ids) {
     $new_order->save();
 
     // Trigger the email for the new order if we have an email to send to
-if (!empty($customer_email)) {
-    WC()->mailer()->get_emails()['WC_Email_Customer_Invoice']->trigger($new_order->get_id());
+    if (!empty($customer_email)) {
+        $mailer = WC()->mailer();
+        $mails = $mailer->get_emails();
+        
+        // Check if the customer invoice mailer exists before triggering
+        if (!empty($mails) && isset($mails['WC_Email_Customer_Invoice'])) {
+            $mails['WC_Email_Customer_Invoice']->trigger($new_order->get_id());
+        }
 
-    // Send a confirmation email to the web developer
-    $to = 'webdev@hostify.co.za';
-    $subject = 'Invoice Sent for Order #' . $new_order->get_order_number();
-    $body = 'An invoice for the new merged order #' . $new_order->get_order_number() . ' has been sent to the customer.';
-    $headers = array('Content-Type: text/html; charset=UTF-8');
-    
-    wp_mail($to, $subject, $body, $headers);
+        // Send a confirmation email to the web developer
+        $to = 'webdev@hostify.co.za';
+        $subject = 'Invoice Sent for Order #' . $new_order->get_order_number();
+        $body = 'An invoice for the new merged order #' . $new_order->get_order_number() . ' has been sent to the customer.';
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        
+        if (!wp_mail($to, $subject, $body, $headers)) {
+            // Handle the email sending failure
+            error_log('Failed to send the developer confirmation email for Order #' . $new_order->get_order_number());
+        }
+    }
 }
