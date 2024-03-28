@@ -80,24 +80,30 @@ function merge_orders_admin_page() {
     // Fetch orders that can be merged (simplified example)
     $orders = get_orders_to_merge();
 
-    // Start building the admin page
-echo '<div class="wrap"><h1>Merge / Process Orders</h1>';
-echo '<div class="merge-orders-instructions">';
-echo '<h2>Instructions:</h2>';
-echo '<p>To merge multiple orders from the same customer:</p>';
+// Start building the admin page
+echo '<div class="wrap"><h1>Process / Merge Auction Wins</h1>';
+echo '<div class="merge-orders-instructions" style="display: flex; justify-content: space-between;">';
+echo '<div style="width: 48%;">';
+echo '<h2>For Multiple Wins:</h2>';
+echo '<p><strong>To merge multiple auction wins for the same user:</strong></p>';
 echo '<ol>';
-echo '<li>Select the orders you wish to merge from the list below.</li>';
-echo '<li>Click the "Merge / Process Orders" button at the bottom.</li>';
-echo '<li>The selected orders will be combined into a single new order, and the original orders will be marked as merged.</li>';
+echo '<li>Select the wins (from the same user) you wish to merge from the list below.</li>';
+echo '<li>Click the "Process / Merge Auction Wins" button at the bottom.</li>';
+echo '<li>The selected wins will be combined into a single order, and the original wins will be marked as merged.</li>';
 echo '</ol>';
-echo '<p>To process a single order:</p>';
-echo '<ol>';
-echo '<li>Simply select the order you wish to process.</li>';
-echo '<li>Click the "Merge / Process Orders" button.</li>';
-echo '<li>The selected order will be updated to a "pending" status, and an invoice will be sent to the customer.</li>';
-echo '</ol>';
-echo '<p>This functionality allows for efficient management of orders, whether you\'re combining multiple orders for the same customer into one or processing individual orders.</p>';
 echo '</div>';
+echo '<div style="width: 48%;">';
+echo '<h2>For Single Wins:</h2>';
+echo '<p><strong>To process a single auction win:</strong></p>';
+echo '<ol>';
+echo '<li>Simply select the win you wish to process for one user.</li>';
+echo '<li>Click the "Process / Merge Auction Wins" button.</li>';
+echo '<li>The selected win will be updated to a "pending" status, and an invoice will be sent to the user.</li>';
+echo '</ol>';
+echo '</div>';
+echo '</div>'; // Close .merge-orders-instructions
+echo '<p>This functionality allows for efficient management of auction wins, whether you\'re combining multiple wins for the same user into one order or processing individual wins.</p>';
+echo '</div>'; // Close .wrap
 
     if (!empty($orders)) {
         // Example layout for listing orders
@@ -135,7 +141,7 @@ echo '</div>';
 
         echo '</tbody></table>';
         echo '<br>';
-        echo '<button type="submit" class="button action">Merge / Process Orders</button>';
+        echo '<button type="submit" class="button action">Process / Merge Auction Wins</button>';
         echo '</form>';
     } else {
         echo '<p>No eligible orders found for merging.</p>';
