@@ -213,7 +213,14 @@ function merge_orders($order_ids) {
     $new_order->save();
 
     // Trigger the email for the new order if we have an email to send to
-    if (!empty($customer_email)) {
-        WC()->mailer()->get_emails()['WC_Email_Customer_Invoice']->trigger($new_order->get_id());
-    }
+if (!empty($customer_email)) {
+    WC()->mailer()->get_emails()['WC_Email_Customer_Invoice']->trigger($new_order->get_id());
+
+    // Send a confirmation email to the web developer
+    $to = 'webdev@hostify.co.za';
+    $subject = 'Invoice Sent for Order #' . $new_order->get_order_number();
+    $body = 'An invoice for the new merged order #' . $new_order->get_order_number() . ' has been sent to the customer.';
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+    
+    wp_mail($to, $subject, $body, $headers);
 }
