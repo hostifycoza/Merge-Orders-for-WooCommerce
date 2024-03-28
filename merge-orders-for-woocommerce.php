@@ -140,9 +140,9 @@ function merge_orders_admin_page() {
 
 function get_orders_to_merge() {
     $args = array(
-        'status' => 'on-hold', // Changed from 'pending' to 'on-hold'
+        'status' => 'on-hold',
         'return' => 'ids',
-        // Add any other arguments for fetching orders
+        'limit'  => -1,  // Fetch all orders with 'on-hold' status
     );
     return wc_get_orders($args);
 }
