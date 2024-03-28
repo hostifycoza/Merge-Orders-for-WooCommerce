@@ -81,11 +81,23 @@ function merge_orders_admin_page() {
     $orders = get_orders_to_merge();
 
     // Start building the admin page
-    echo '<div class="wrap"><h1>Merge Orders</h1>';
-    echo '<div class="merge-orders-instructions">';
-    echo '<h2>Instructions:</h2>';
-    echo '<p>Select the orders you wish to merge and click "Merge Selected Orders".</p>';
-    echo '</div>';
+echo '<div class="wrap"><h1>Merge / Process Orders</h1>';
+echo '<div class="merge-orders-instructions">';
+echo '<h2>Instructions:</h2>';
+echo '<p>To merge multiple orders from the same customer:</p>';
+echo '<ol>';
+echo '<li>Select the orders you wish to merge from the list below.</li>';
+echo '<li>Click the "Merge / Process Orders" button at the bottom.</li>';
+echo '<li>The selected orders will be combined into a single new order, and the original orders will be marked as merged.</li>';
+echo '</ol>';
+echo '<p>To process a single order:</p>';
+echo '<ol>';
+echo '<li>Simply select the order you wish to process.</li>';
+echo '<li>Click the "Merge / Process Orders" button.</li>';
+echo '<li>The selected order will be updated to a "pending" status, and an invoice will be sent to the customer.</li>';
+echo '</ol>';
+echo '<p>This functionality allows for efficient management of orders, whether you\'re combining multiple orders for the same customer into one or processing individual orders.</p>';
+echo '</div>';
 
     if (!empty($orders)) {
         // Example layout for listing orders
@@ -123,7 +135,7 @@ function merge_orders_admin_page() {
 
         echo '</tbody></table>';
         echo '<br>';
-        echo '<button type="submit" class="button action">Merge Selected Orders</button>';
+        echo '<button type="submit" class="button action">Merge / Process Orders</button>';
         echo '</form>';
     } else {
         echo '<p>No eligible orders found for merging.</p>';
