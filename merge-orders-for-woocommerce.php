@@ -158,9 +158,24 @@ function handle_merge_orders_submission() {
     exit;
 }
 
-
-
 function merge_orders($order_ids) {
+    // If there's only one order, set it to pending and send an invoice.
+    if (count($order_ids) === 1) {
+        $single_order = wc_get_order($order_ids[0]);
+        if ($single_order) {
+            $single_order->set_status('pending', 'Single order, set to pending payment.');
+            $single_order->save();
+
+            // Trigger the invoice email to the customer.
+            WC()->mailer()->get_emails()['WC_Email_Customer_Invoice']->trigger($single_order->get_id());
+
+            // Send a confirmation email to the web developer.
+            send_developer_confirmation($single_order->get_order_number());
+
+            // Redirect to avoid further processing.
+            return;
+        }
+    }
     // Create a new order
     $new_order = wc_create_order();
 
@@ -222,15 +237,19 @@ function merge_orders($order_ids) {
             $mails['WC_Email_Customer_Invoice']->trigger($new_order->get_id());
         }
 
-        // Send a confirmation email to the web developer
-        $to = 'webdev@hostify.co.za';
-        $subject = 'Invoice Sent for Order #' . $new_order->get_order_number();
-        $body = 'An invoice for the new merged order #' . $new_order->get_order_number() . ' has been sent to the customer.';
-        $headers = array('Content-Type: text/html; charset=UTF-8');
-        
-        if (!wp_mail($to, $subject, $body, $headers)) {
-            // Handle the email sending failure
-            error_log('Failed to send the developer confirmation email for Order #' . $new_order->get_order_number());
-        }
+        // Now using the function to send a confirmation email to the developer
+        send_developer_confirmation($new_order->get_order_number());
     }
+    
+    // Any additional code you might have goes here...
+}
+
+// Define the function to send a confirmation email to the developer.
+function send_developer_confirmation($order_number) {
+    $to = 'webdev@hostify.co.za';
+    $subject = 'Invoice Sent for Order #' . $order_number;
+    $body = 'An invoice for order #' . $order_number . ' has been sent to the customer.';
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    wp_mail($to, $subject, $body, $headers);
 }
