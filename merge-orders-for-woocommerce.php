@@ -34,8 +34,8 @@ add_action( 'plugins_loaded', 'check_woocommerce_version' );
 function register_merged_order_status() {
     register_post_status('wc-merged', array(
         'label'                     => 'Merged',
-        'public'                    => true,
-        'exclude_from_search'       => false,
+        'public'                    => false,
+        'exclude_from_search'       => true,
         'show_in_admin_all_list'    => true,
         'show_in_admin_status_list' => true,
         'label_count'               => _n_noop('Merged <span class="count">(%s)</span>', 'Merged <span class="count">(%s)</span>')
