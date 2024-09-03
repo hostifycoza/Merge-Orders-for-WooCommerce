@@ -7,8 +7,6 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 // Check if WooCommerce is active
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
 
-    global $wpdb;
-
     // Query to select orders with 'wc-merged' status
     $orders_ids = get_posts(array(
         'posts_per_page' => -1,
@@ -28,3 +26,4 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         }
     }
 }
+?>
